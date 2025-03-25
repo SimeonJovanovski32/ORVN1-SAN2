@@ -46,11 +46,20 @@ def prestej_piklse_z_barvo_koze(slika, barva_koze) -> int:
     
     return pikseli_koze
 
-def doloci_barvo_koze(slika,levo_zgoraj,desno_spodaj) -> tuple:
-    '''Ta funkcija se kliče zgolj 1x na prvi sliki iz kamere. 
-    Vrne barvo kože v območju ki ga definira oklepajoča škatla (levo_zgoraj, desno_spodaj).
-      Način izračuna je prepuščen vaši domišljiji.'''
-    pass
+# Function to determine the skin color in a specified region
+def doloci_barvo_koze(slika, levo_zgoraj, desno_spodaj) -> tuple:
+    '''Returns the skin color in the area defined by the bounding box.'''
+    # Crop the region from the image where we want to determine the skin color
+    regija = slika[levo_zgoraj[1]:desno_spodaj[1], levo_zgoraj[0]:desno_spodaj[0]]
+    
+    # Convert the selected region to HSV color space
+    hsv_regija = cv.cvtColor(regija, cv.COLOR_BGR2HSV)
+    
+    # Calculate the average HSV values in the selected region
+    povprecje_hsv = np.mean(hsv_regija, axis=(0, 1))
+    
+    return tuple(povprecje_hsv)  # Return the average HSV values as a tuple
+
 
 if __name__ == '__main__':
     #Pripravi kamero
