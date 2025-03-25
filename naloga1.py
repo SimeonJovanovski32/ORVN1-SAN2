@@ -60,20 +60,44 @@ def doloci_barvo_koze(slika, levo_zgoraj, desno_spodaj) -> tuple:
     
     return tuple(povprecje_hsv)  # Return the average HSV values as a tuple
 
-
 if __name__ == '__main__':
-    #Pripravi kamero
-
-    #Zajami prvo sliko iz kamere
-
-    #Izračunamo barvo kože na prvi sliki
-
-    #Zajemaj slike iz kamere in jih obdeluj     
+    # Initialize the camera
+    kamera = cv.VideoCapture(0)
     
-    #Označi območja (škatle), kjer se nahaja obraz (kako je prepuščeno vaši domišljiji)
-        #Vprašanje 1: Kako iz števila pikslov iz vsake škatle določiti celotno območje obraza (Floodfill)?
-        #Vprašanje 2: Kako prešteti število ljudi?
-
-        #Kako velikost prebirne škatle vpliva na hitrost algoritma in točnost detekcije? Poigrajte se s parametroma velikost_skatle
-        #in ne pozabite, da ni nujno da je škatla kvadratna.
-    pass
+    # Check if the camera opened successfully
+    if not kamera.isOpened():
+        print('Camera was not opened.')
+    else:
+        barva_koze = None  # Initialize the skin color variable to None
+        
+        while True:
+            # Capture an image from the camera
+            ret, slika = kamera.read()
+            if not ret:
+                print("Unable to capture image.")
+                break
+            
+            # Display the image in the "Camera" window
+            cv.imshow('Camera', slika)
+            
+            # Resize the image for processing (if necessary)
+            slika_zmanjsana = zmanjsaj_sliko(slika, 640, 480)
+            
+            # Determine the skin color (by pressing 'd')
+            if cv.waitKey(1) & 0xFF == ord('d'):  # Press 'd' to determine the skin color
+                barva_koze = doloci_barvo_koze(slika_zmanjsana, (100, 100), (200, 200))  # Determine the skin color in this region
+                print("Skin color:", barva_koze)  # Print the determined skin color
+            
+            # If the skin color is determined, process the image with rectangles
+            if barva_koze is not None:
+                slika_z_obrobami = obdelaj_sliko_s_skatlami(slika_zmanjsana, 50, 50, barva_koze)
+                # Display the image with the rectangles
+                cv.imshow('Image with rectangles', slika_z_obrobami)
+        
+            # If we press the 'q' key, close the window
+            if cv.waitKey(1) & 0xFF == ord('q'):
+                break
+        
+        # When done, release the camera and close all windows
+        kamera.release()
+        cv.destroyAllWindows()
