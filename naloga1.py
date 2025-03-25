@@ -28,9 +28,23 @@ def obdelaj_sliko_s_skatlami(slika, sirina_skatle, visina_skatle, barva_koze) ->
     
     return slika
 
+# Function to count the number of skin-colored pixels in an image
 def prestej_piklse_z_barvo_koze(slika, barva_koze) -> int:
-    '''Prestej število pikslov z barvo kože v škatli.'''
-    pass
+    '''Count the number of skin-colored pixels in the image'''
+    # Convert the image to HSV color space (Hue, Saturation, Value)
+    hsv_slika = cv.cvtColor(slika, cv.COLOR_BGR2HSV)
+    
+    # Define the lower and upper boundaries for skin color in HSV space
+    spodnja_meja = np.array([0, 10, 130], dtype=np.uint8)  # Lower boundary for skin
+    zgornja_meja = np.array([20, 150,255], dtype=np.uint8)  # Upper boundary for skin
+    
+    # Create a mask that highlights areas matching the skin color
+    maska = cv.inRange(hsv_slika, spodnja_meja, zgornja_meja)
+    
+    # Count the pixels that are "skin" (those that are in the mask)
+    pikseli_koze = cv.countNonZero(maska)
+    
+    return pikseli_koze
 
 def doloci_barvo_koze(slika,levo_zgoraj,desno_spodaj) -> tuple:
     '''Ta funkcija se kliče zgolj 1x na prvi sliki iz kamere. 
