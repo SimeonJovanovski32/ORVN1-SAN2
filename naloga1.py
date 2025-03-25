@@ -6,14 +6,27 @@ def zmanjsaj_sliko(slika, sirina, visina):
     return cv.resize(slika, (sirina, visina))  # Resize the image using OpenCV
 
 
+# Function to process the image with boxes (detect skin in each box)
 def obdelaj_sliko_s_skatlami(slika, sirina_skatle, visina_skatle, barva_koze) -> list:
-    '''Sprehodi se skozi sliko v velikosti škatle (sirina_skatle x visina_skatle) in izračunaj število pikslov kože v vsaki škatli.
-    Škatle se ne smejo prekrivati!
-    Vrne seznam škatel, s številom pikslov kože.
-    Primer: Če je v sliki 25 škatel, kjer je v vsaki vrstici 5 škatel, naj bo seznam oblike
-      [[1,0,0,1,1],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[1,0,0,0,1]]. 
-      V tem primeru je v prvi škatli 1 piksel kože, v drugi 0, v tretji 0, v četrti 1 in v peti 1.'''
-    pass
+    '''Loop through the image in box sizes (width x height) and calculate the number of skin pixels in each box.'''
+    visina, sirina, _ = slika.shape  # Get the image dimensions
+    seznam_skatel = []  # List for storing information about boxes
+    
+    # Loop through the image and split it into smaller boxes
+    for y in range(0, visina - visina_skatle, visina_skatle):
+        for x in range(0, sirina - sirina_skatle, sirina_skatle):
+            # Crop the section of the image that represents one box
+            skatelni_del = slika[y:y + visina_skatle, x:x + sirina_skatle]
+            
+            # Count the skin pixels in this box
+            pikseli_koze = prestej_piklse_z_barvo_koze(skatelni_del, barva_koze)
+            
+            # If there are skin pixels in this box (more than 0), draw a red rectangle
+            if pikseli_koze > 0:
+                # Draw a rectangle around the box
+                cv.rectangle(slika, (x, y), (x + sirina_skatle, y + visina_skatle), (0, 0, 255), 2)
+    
+    return slika
 
 def prestej_piklse_z_barvo_koze(slika, barva_koze) -> int:
     '''Prestej število pikslov z barvo kože v škatli.'''
