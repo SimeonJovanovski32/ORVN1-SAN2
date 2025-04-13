@@ -1,0 +1,65 @@
+name: 28548_test
+
+on:
+  push:
+    paths:
+      - '**.py'
+  pull_request:
+
+jobs:
+  preveri_teste:
+    name: Preveri testne skripte
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repozitorija
+        uses: actions/checkout@v3
+
+      - name: Poišči testne datoteke
+        run: |
+          if ls test_*.py 1> /dev/null 2>&1; then
+            echo "Testne datoteke obstajajo." > napaka.txt
+          else
+            echo "NAPAKA: Testne datoteke ne obstajajo!" > napaka.txt
+            exit 1
+          fi
+
+      - name: Naloži artefakt napake
+        uses: actions/upload-artifact@v3
+        with:
+          name: napaka
+          path: napaka.txt
+
+  izvedi_teste:
+    name: Izvedi teste
+    needs: preveri_teste
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repozitorija
+        uses: actions/checkout@v3
+
+      - name: Prenesi napaka.txt
+        uses: actions/download-artifact@v3
+        with:
+          name: napaka
+          path: .
+
+      - name: Preveri napako
+        run: |
+          if grep -q "NAPAKA" napaka.txt; then
+            echo "Najdena napaka: testi se ne bodo izvedli."
+            cat napaka.txt
+            exit 1
+          else
+            echo "Vse OK – testi se bodo izvedli."
+          fi
+
+      - name: Namesti odvisnosti
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy opencv-python
+
+      - name: Zaženi teste
+        run: |
+          python3 -m unittest discover -s . -p "test_*.py"
