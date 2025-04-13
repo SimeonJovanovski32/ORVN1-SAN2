@@ -3,14 +3,14 @@ name: Run Tests
 on:
   push:
     branches:
-      - main
+      - main  # Trigger when changes are pushed to the 'main' branch
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Check out code
         uses: actions/checkout@v2
 
       - name: Set up Python
@@ -24,4 +24,4 @@ jobs:
 
       - name: Run tests
         run: |
-          python -m unittest discover -s tests
+          python -m unittest test_naloga1.py
