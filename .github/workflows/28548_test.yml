@@ -1,65 +1,27 @@
-name: 28548_test
+name: Run Tests
 
 on:
   push:
-    paths:
-      - '**.py'
-  pull_request:
+    branches:
+      - main
 
 jobs:
-  preveri_teste:
-    name: Preveri testne skripte
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repozitorija
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Poišči testne datoteke
-        run: |
-          if ls test_*.py 1> /dev/null 2>&1; then
-            echo "Testne datoteke obstajajo." > napaka.txt
-          else
-            echo "NAPAKA: Testne datoteke ne obstajajo!" > napaka.txt
-            exit 1
-          fi
-
-      - name: Naloži artefakt napake
-        uses: actions/upload-artifact@v3
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
-          name: napaka
-          path: napaka.txt
+          python-version: '3.x'
 
-  izvedi_teste:
-    name: Izvedi teste
-    needs: preveri_teste
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repozitorija
-        uses: actions/checkout@v3
-
-      - name: Prenesi napaka.txt
-        uses: actions/download-artifact@v3
-        with:
-          name: napaka
-          path: .
-
-      - name: Preveri napako
+      - name: Install dependencies
         run: |
-          if grep -q "NAPAKA" napaka.txt; then
-            echo "Najdena napaka: testi se ne bodo izvedli."
-            cat napaka.txt
-            exit 1
-          else
-            echo "Vse OK – testi se bodo izvedli."
-          fi
+          pip install -r requirements.txt
 
-      - name: Namesti odvisnosti
+      - name: Run tests
         run: |
-          python -m pip install --upgrade pip
-          pip install numpy opencv-python
-
-      - name: Zaženi teste
-        run: |
-          python3 -m unittest discover -s . -p "test_*.py"
+          python -m unittest discover -s tests
