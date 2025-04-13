@@ -1,30 +1,32 @@
-name: 28548_deploy
+name: Deploy to DockerHub
 
 on:
   workflow_run:
-    workflows: ["28548_test"]
+    workflows: ["28548_test"]  # This triggers the deploy when the test workflow finishes successfully
     types:
       - completed
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
 
     - name: Log in to DockerHub
-      uses: docker/login-action@v3
+      uses: docker/login-action@v2
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        username: ${{ secrets.DOCKER_USERNAME }}  # Make sure to set this in GitHub Secrets
+        password: ${{ secrets.DOCKER_PASSWORD }}  # Make sure to set this in GitHub Secrets
 
     - name: Build Docker image
       run: |
-        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/naloga1:latest .
-
-    - name: Push image to DockerHub
+        docker build -t jovanovski35/my-app:latest .
+    
+    - name: Push Docker image to DockerHub
       run: |
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/naloga1:latest
+        docker push jovanovski35/my-app:latest
